@@ -15,13 +15,14 @@ class CreateEtudientsTable extends Migration
     {
         Schema::create('etudients', function (Blueprint $table) {
             $table->id()->primaryKey()->increment();
-            $table->string('nom', 50);
+           // $table->string('nom', 50);
             $table->string('adresse',100);
             $table->string('phone',25);
-            $table->string('email',100)->unique();;
+          //  $table->string('email',100)->unique();;
             $table->date('date_naissance');
             $table->unsignedBigInteger('villeId');
             $table->foreign('villeId')->references('id')->on('villes');
+            $table->foreign('id')->references('id')->on('useres');
             $table->timestamps();
         });
         

@@ -15,6 +15,7 @@ class VilleFactory extends Factory
     {
         return [
             'nom'=> $this->faker->name(),
+            'nom_fr'=> $this->faker->name(),
         ];
     }
 }

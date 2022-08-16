@@ -1,10 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\Etudient;
 use App\Models\Ville;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EtudientController extends Controller
 {
@@ -15,14 +17,12 @@ class EtudientController extends Controller
      */
     public function index()
     {
-        $etudiants=Etudient::all();
-        $villes = Ville::all();
-          //OUTER JOIN
-      //   $etudiants = Etudient::select()
-      //   ->leftJOIN('villes', 'etudients.villeId', '=', 'villes.id')
-      //   ->get();
-
-        return view('etudiant.index',['etudiants' =>$etudiants,'villes' => $villes]);
+        $villes = Ville::selectVilles();
+        $etudiants= DB::table('etudients')
+        ->join('users', 'users.id', '=', 'etudients.id')
+        ->select('users.*', 'etudients.*')
+        ->get();
+       return view('etudiant.index', ['etudiants' => $etudiants,'villes' => $villes]);
     }
 
     /**
@@ -32,7 +32,7 @@ class EtudientController extends Controller
      */
     public function create()
     {
-        $villes = Ville::all();
+       $villes = Ville::selectVilles();
 
         return view('etudiant.create', ['villes' => $villes]);
     }
@@ -45,17 +45,38 @@ class EtudientController extends Controller
      */
     public function store(Request $request)
     {
-
-        $etudient =Etudient::create([
-            'nom' => $request->nom,
-            'adresse' => $request->adresse,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'date_naissance' => $request->date_naissance,
-            'villeId' => $request->villeId
+        $request->validate([
+            'name' => 'required|max:30|min:2|unique:users',
+            'email' => 'required|email|unique:users'
         ]);
+        
+        $request->validate([
+            'adresse' => 'required|regex:/([- ,\/0-9a-zA-Z]+)/',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'date_naissance' => 'required|date'
+           
+        ]);
+        $user =User::create([
+          
+            'name' => $request->name,
+             'email' => $request->email,
+         ]);
+        $id_eudiant = DB::getPdo()->lastInsertId();
 
-        return redirect(route('etudiant.show', $etudient ->id));
+        $etudients = DB::table('etudients')
+                     ->insert( array(
+                        'id' => $id_eudiant,
+                        'adresse' => $request->adresse,
+                        'phone' => $request->phone,
+                        'date_naissance' => $request->date_naissance,
+                        'villeId' => $request->villeId
+                         )
+                     );
+                   
+       $etudient = Etudient::all();
+       
+
+        return redirect(route('etudiant.show', $id_eudiant));
     }
 
     /**
@@ -66,8 +87,14 @@ class EtudientController extends Controller
      */
     public function show(Etudient $etudient)
     {
-        $villes = Ville::all();
-        return view('etudiant.show', ['etudient' => $etudient,'villes' => $villes]);
+        
+        $villes = Ville::selectVilles();
+         $user = DB::table('etudients')
+        ->join('users', 'users.id', '=', 'etudients.id')
+        ->select('users.*', 'etudients.*')
+        ->WHERE('users.id','=', $etudient->id)
+        ->get();
+       return view('etudiant.show', ['user' => $user[0],'villes' => $villes]);
     }
 
     /**
@@ -78,8 +105,14 @@ class EtudientController extends Controller
      */
     public function edit(Etudient $etudient)
     {
-        $villes = Ville::all();
-        return view('etudiant.edit', ['etudient' => $etudient,'villes' => $villes]);
+        $villes = Ville::selectVilles();
+        
+        $user = DB::table('etudients')
+        ->join('users', 'users.id', '=', 'etudients.id')
+        ->select('users.*', 'etudients.*')
+        ->WHERE('users.id','=', $etudient->id)
+        ->get();
+        return view('etudiant.edit', ['etudient' => $etudient,'user' => $user[0],'villes' => $villes]);
     }
 
     /**
@@ -91,11 +124,29 @@ class EtudientController extends Controller
      */
     public function update(Request $request, Etudient $etudient)
     {
-        $etudient->update([
-            'nom' => $request->nom,
+        $request->validate([
+            'name' => 'required|max:30|min:2',
+            'email' => 'required|email',
+            
+        ]);
+       
+
+         $request->validate([
+            'adresse' => 'required|regex:/([- ,\/0-9a-zA-Z]+)/',
+            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10',
+            'date_naissance' => 'required|date|nullable',
+            'villeId' => 'required|exists:villes,id',
+        ]);
+        $user = DB::table('users')
+        ->WHERE('users.id','=', $etudient->id)
+         ->update( array(
+            'name' => $request->name,
+            'email' => $request->email
+             )
+         );
+         $etudient->update([
             'adresse' => $request->adresse,
             'phone' => $request->phone,
-            'email' => $request->email,
             'date_naissance' => $request->date_naissance,
             'villeId' => $request->villeId
         ]);
@@ -111,8 +162,12 @@ class EtudientController extends Controller
      */
     public function destroy(Etudient $etudient)
     {
+        
         $etudient->delete();
-
-        return redirect(route('etudiant'));
+        $id= $etudient->id;
+        $user = DB::table('users')
+        ->WHERE('users.id','=', $id)
+        ->delete();
+        return redirect(route('etudiant', $user ));
     }
 }

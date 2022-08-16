@@ -16,6 +16,7 @@ class CreateVillesTable extends Migration
         Schema::create('villes', function (Blueprint $table) {
             $table->id()->primaryKey();
             $table->string('nom', 50);
+            $table->string('nom_fr', 50);
             $table->timestamps();
         });
     }

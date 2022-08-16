@@ -1,59 +1,66 @@
-@extends('layouts.app')
+@extends('Admin.main')
 @section('content')
 <div class="container-fluid">
   <div class="container">
     <div class="input-group">
-        <h1>Ajouter un nouveau etudiant </a></h1>
-        <div class="btn pull-right  ml-5"><a href="{{ route('etudiant') }}" class="btn btn btn-info">Liste des etudiants <i class="zmdi zmdi-long-arrow-right ml-5"></i></a></div>
+        <h1>@lang('lang.text_new_etud') </a></h1>
+        <div class="btn pull-right  ml-5"><a href="{{ route('etudiant') }}" class="btn btn btn-info">@lang('lang.text_new_etud') <i class="zmdi zmdi-long-arrow-right ml-5"></i></a></div>
     </div>
     <form method="post">
         @csrf
         <div class="form">
             <div class="form-group">
-                <label for="uname">Nom etudiant:</label>
-                <input type="text" class="form-control form-control-padding" id="nom" placeholder="Enter nom etudiant" name="nom"  required>
-                <div class="valid-feedback">Valid.</div>
-                <div class="invalid-feedback">Please fill out this field.</div>
+                <label for="name">@lang('lang.text_non_stud'):</label>
+                <input type="text" class="form-control form-control-padding" id="name" placeholder="Enter nom etudiant" name="name"  required>
+              
+                @if($errors->has('name'))
+                <span class="text-danger">{{ $errors->first('name')}}</span>
+                @endif
             </div>
             <div class="form-group">
-                <label for="adresse">Address:</label>
+                <label for="adresse">@lang('lang.text_Adress'):</label>
                 <input type="text" class="form-control form-control-padding" placeholder="Enter adresse" name="adresse"  id="adresse"   required>
-                <div class="valid-feedback">Valid.</div>
-                <div class="invalid-feedback">Please fill out this field.</div>
+                @if($errors->has('adresse'))
+                <span class="text-danger">{{ $errors->first('adresse')}}</span>
+                @endif
             </div>
             <div  class="form-group">
-                <label for="tel">Telephone:</label>
+                <label for="tel">@lang('lang.text_phone'):</label>
                 <div class="input-group">
                     <input type="tel" class="form-control form-control-padding" placeholder="Enter phone" name="phone"  id="phone"  required>
-                    <div class="valid-feedback">Valid.</div>
-                    <div class="invalid-feedback">Please fill out this field.</div>
+                    @if($errors->has('phone'))
+                    <span class="text-danger">{{ $errors->first('phone')}}</span>
+                    @endif
                 </div>
             </div>
             <div class="form-group">
-                <label for="email">Email address:</label>
+                <label for="email">@lang('lang.text_mail'):</label>
                 <input type="email" class="form-control form-control-padding" placeholder="Enter email" name="email"  id="email"  required>
-                <div class="valid-feedback">Valid.</div>
-                <div class="invalid-feedback">Please fill out this field.</div>
+                @if($errors->has('email'))
+                <span class="text-danger">{{ $errors->first('email')}}</span>
+                @endif
             </div>
+            
             <div class="form-group">
-                <label for="email">Date de Naissance:</label>
+                <label for="email">@lang('lang.text_birth'):</label>
                 <input type="date" class="form-control form-control-padding" placeholder="Enter date" name="date_naissance"  id="date"   required>
-                <div class="valid-feedback">Valid.</div>
-                <div class="invalid-feedback">Please fill out this field.</div>
+                @if($errors->has('date_naissance'))
+                <span class="text-danger">{{ $errors->first('date_naissance')}}</span>
+                @endif
             </div>
             <div class="form-group">
-                <label for="villeId">Select ville</label>
+                <label for="villeId">@lang('lang.text_select_city')</label>
                 <select class="form-control form-control-padding" name="villeId" id="villeId">
                   @forelse($villes as $ville)
                   <tr>
                     <option value="{{$ville->id}}" >{{ ucfirst($ville->nom)}}</option>
                   @empty
-                      <li class="text-warning">Aucun article disponible</li>
+                      <li class="text-warning">@lang('lang.text_no_stud')</li>
                     </tr>
                   @endforelse
                 </select>
               </div>
-            <button type="submit" class="btn btn-primary mt-2 ">Ajouter un etudiant</button>
+            <button type="submit" class="btn btn-primary mt-2 ">@lang('lang.text_add_stud')</button>
         </div>
    </form>
     </div>
